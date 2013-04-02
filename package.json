@@ -1,0 +1,18 @@
+{
+  "name": "Thrizzlebot",
+  "version": "0.0.0",
+  "description": "IRC bot for the #npnd chat room",
+  "main": "bot.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": "",
+  "keywords": [
+    "irc"
+  ],
+  "author": "Mark Henderson (henderson.mark@gmail.com)",
+  "license": "BSD",
+  "dependencies": {
+    "irc": "~0.3.6"
+  }
+}
