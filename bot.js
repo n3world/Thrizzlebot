@@ -3,6 +3,7 @@
 
   var irc = require("irc");
   var config = require("./config");
+  var _cmds = {}
 
   // Create the bot name
   var bot = new irc.Client(config.server, config.botName, {
@@ -26,26 +27,53 @@
     packet.nick = nick;
     packet.args = text.split(/\s/g);
 
-    var command = this[packet.args[0]];
-    if ('function' !== typeof command) {
-      bot.say(nick, "I don't know what you're talking about");
+    var command = packet.args[0];
+    packet.args.splice(0, 1);
+    if (_cmds[command]) {
+      return _cmds[command].run(packet);
     } else {
-      packet.args.splice(0, 1);
-      return command(packet);
+      bot.say(nick, "I don't know what you're talking about: " + command);
+      bot.say(nick, "Commands: " + _cmds);
     }
   });
 
-  // Tweets whatever you send this to the @NPND Account
-  // OP status in #npnd required
-  bot.tweet = function (packet) {
-    bot.say(packet.nick, "If this was working I would tweet: " + packet.args[0]);
-  };
+  // Method to register for pm commands
+  // commandClass should implement atleast run(packet) and help
+  bot.addPmCommand = function (name, commandClass) {
+    _cmds[name] = commandClass;
+  }
 
-  // Summons a registered user to the channel for discussion
-  // Requires contact method to be registered with ThrizzleBot
-  bot.summon = function (packet) {
-    bot.say(packet.nick, "If this was working I would summon: " + packet.args[0]);
-  };
+  // Help command plugin
+  bot.addPmCommand("help", function(bot) {
+    var _bot = bot;
+
+    function help() {
+      return "[<cmd>]";
+    }
+
+    function run(packet) {
+      var response = "";
+
+      if (packet.args.length > 0) {
+        var command = packet.args[0];
+        if (_cmds[command]) {
+          response += command + " " +_cmds[command].help();
+        } else {
+          response = "Unknown command: " + command;
+        }
+      } else {
+        response = "Commands:";
+
+        for (var cmd in  _cmds) {
+          response += " " + cmd;
+        }
+      }
+
+      _bot.say(packet.nick, response);
+    }
+
+    return {"help":help, "run":run};
+  }(bot));
 
   // Pull in the Seen modules
   require("./plugins/seen").init(bot);
