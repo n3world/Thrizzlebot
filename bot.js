@@ -53,5 +53,5 @@
   };
 
   // Pull in the Seen modules
-  require("seen").init(bot);
+  require("./plugins/seen").init(bot);
 })();
