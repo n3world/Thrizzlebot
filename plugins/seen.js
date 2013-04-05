@@ -1,6 +1,7 @@
 exports.init = (function () {
   "use strict";
   var _bot,
+      name = "seen",
       _seen = {};
 
   function listenForJoin(channel, who) {
@@ -20,14 +21,6 @@ exports.init = (function () {
     // Observe the action
     var msg = "saying: '" + text + "'";
     observer(msg, channel, who);
-
-    // And also see if we should respond!
-    var cmd = "!seen";
-    if (text.slice(0, cmd.length) == cmd) {
-      var args = text.split(/\s/g)
-      var response = getResponse(channel, args[1]);
-      _bot.say(channel, who + ": " + response);
-    }
   }
 
   function listenForNickChange(oldnick, newnick, channels, message) {
@@ -80,6 +73,22 @@ exports.init = (function () {
     return response;
   }
 
+  // Hander for channel command interface
+  function respondToChannelCommand(bot) {
+    var _bot = bot;
+
+    function help() {
+      return "<nick>";
+    }
+
+    function run(who, channel, args, packet) {
+      var response = getResponse(channel, args[0]);
+      _bot.say(channel, who + ": " + response);
+    }
+
+    return {"run": run, "help":help};
+  }
+
 
   /**
    * PM command handler
@@ -109,7 +118,8 @@ exports.init = (function () {
     _bot.addListener("message#", listenForMessage);
     _bot.addListener("nick", listenForNickChange);
     _bot.addListener("part", listenForPart);
-    _bot.addPmCommand("seen", pmResponder(_bot));
+    _bot.addPmCommand(name, pmResponder(_bot));
+    _bot.addChannelCommand(name, respondToChannelCommand(_bot));
   }
 
   return init;
