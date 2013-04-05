@@ -122,6 +122,53 @@
     return {"help":_help, "run":run};
   }(bot));
 
-  // Pull in the Seen modules
-  require("./plugins/seen").init(bot);
+  // Load a single plugin
+  function loadPlugin(pluginDir, name, config) {
+    // Grab the plugin specific config
+    var pluginConfig = config[name];
+    console.log("Loading plugin: " + name);
+
+    try {
+      require(pluginDir + "/" + name).init(bot, pluginConfig);
+    } catch(err) {
+      console.error("Failed to load plugin " + name + ": " + err);
+    }
+  }
+
+  // Pull in the plugins
+  function loadPlugins(config) {
+    var _jsExt = ".js";
+    var pluginDir;
+    // see if we have config for thie plugin
+    if (config["dir"]) {
+      pluginDir = config["dir"];
+    } else {
+      pluginDir = "./plugins";
+    }
+
+    var fs = require("fs");
+
+    // If plugins dir is a directory load all plugins found there
+    var stat = fs.statSync(pluginDir);
+    if (stat.isDirectory()) {
+      console.log("Loading plugins");
+
+      var entries = fs.readdirSync(pluginDir);
+      for (var i = 0; i < entries.length; ++i) {
+        var entry = entries[i];
+        if (entry.length > 3 && entry.substring(entry.length - 3, entry.length) == _jsExt) {
+          var pluginName = entry.substring(0, entry.length - _jsExt.length);
+          loadPlugin(pluginDir, pluginName, config);
+        }
+      }
+      console.log("Plugin loading done");
+    } else {
+      console.warn("Plugin directory is not a directory: " + pluginDir);
+    }
+  }
+
+  // Only load the plugins if we have something in the config
+  if (config.plugins) {
+    loadPlugins(config.plugins);
+  }
 })();

@@ -111,7 +111,7 @@ exports.init = (function () {
   /**
    * Initialize listeners.
    */
-  function init(bot) {
+  function init(bot, config) {
     _bot = bot;
     _bot.addListener("join", listenForJoin);
     _bot.addListener("kick", listenForKick);
