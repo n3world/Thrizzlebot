@@ -4,6 +4,7 @@ module.exports = {
   botName: "ThrizzleBot-Dev"
   plugins: {
     dir: "./plugins",
-    seen: {"key1":"value1"}
+    seen: {"key1":"value1"},
+    disable: ["badPlugin"]
   }
 };

@@ -135,6 +135,16 @@
     }
   }
 
+  function _isPluginDisabled(name, config) {
+    if (config.disable) {
+      for (var i = 0; i < config.disable.length; ++i) {
+        if (name == config.disable[i])
+          return true;
+      }
+    }
+    return false;
+  }
+
   // Pull in the plugins
   function loadPlugins(config) {
     var _jsExt = ".js";
@@ -158,7 +168,11 @@
         var entry = entries[i];
         if (entry.length > 3 && entry.substring(entry.length - 3, entry.length) == _jsExt) {
           var pluginName = entry.substring(0, entry.length - _jsExt.length);
-          loadPlugin(pluginDir, pluginName, config);
+          if (_isPluginDisabled(pluginName, config)) {
+            console.info("Plugin disabled: " + pluginName);
+          } else {
+            loadPlugin(pluginDir, pluginName, config);
+          }
         }
       }
       console.log("Plugin loading done");
