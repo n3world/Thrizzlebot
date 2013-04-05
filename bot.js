@@ -2,12 +2,7 @@
   "use strict";
 
   var irc = require("irc");
-
-  var config = {
-    channels: ["#npnd-dev"],
-    server: "irc.freenode.net",
-    botName: "ThrizzleBot"
-  };
+  var config = require("./config");
 
   // Create the bot name
   var bot = new irc.Client(config.server, config.botName, {

@@ -1,0 +1,5 @@
+module.exports = {
+  channels: ["#npnd-dev"],
+  server: "irc.freenode.net",
+  botName: "ThrizzleBot-Dev"
+};
