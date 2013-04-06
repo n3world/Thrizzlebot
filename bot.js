@@ -129,12 +129,8 @@
   }
 
   function _isPluginDisabled(name, config) {
-    if (config.disable) {
-      for (var i = 0; i < config.disable.length; ++i) {
-        if (name == config.disable[i])
-          return true;
-      }
-    }
+    if (config.disable && config.disable.indexOf(name) >= 0)
+      return true;
     return false;
   }
 
