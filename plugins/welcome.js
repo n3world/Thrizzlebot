@@ -12,7 +12,7 @@ exports.init = (function() {
         salutation;
 
     if (who !== config.botName) {
-      pattern = config.plugin.welcome.salutation;
+      pattern = config.plugins.welcome.salutation;
       salutation = util.format(pattern, who);
       _bot.say(channel, salutation);
     }

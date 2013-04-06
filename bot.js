@@ -46,13 +46,6 @@
      _helpCommands(bot, commands, [], target, preface);
   }
 
-  // Listen for joins
-  bot.addListener("join", function (channel, who) {
-    if (who !== config.botName) {
-      bot.say(channel, who + " WHATUUUP");
-    }
-  });
-
   /**
    * nick = string. nick of person pm-ing
    * text = string, content of pm
