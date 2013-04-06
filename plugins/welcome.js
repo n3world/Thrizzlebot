@@ -1,7 +1,8 @@
 exports.init = (function() {
   "use strict";
   var _bot,
-      config = require("../config"),
+      _config,
+      name = "welcome",
       util = require('util');
 
   /**
@@ -11,8 +12,8 @@ exports.init = (function() {
     var pattern,
         salutation;
 
-    if (who !== config.botName) {
-      pattern = config.plugins.welcome.salutation;
+    if (who !== _bot.nick) {
+      pattern = _config.salutation;
       salutation = util.format(pattern, who);
       _bot.say(channel, salutation);
     }
@@ -21,8 +22,9 @@ exports.init = (function() {
   /**
    * Initialize listeners.
    */
-  function init(bot) {
+  function init(bot, config) {
     _bot = bot;
+    _config = config;
     _bot.addListener("join", listenForJoin);
   }
 
