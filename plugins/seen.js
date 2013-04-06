@@ -1,6 +1,7 @@
 exports.init = (function () {
   "use strict";
   var _bot,
+      name = "seen",
       _seen = {};
 
   function listenForJoin(channel, who) {
@@ -20,11 +21,6 @@ exports.init = (function () {
     // Observe the action
     var msg = "saying: '" + text + "'";
     observer(msg, channel, who);
-
-    // And also see if we should respond!
-    if (0 === text.indexOf('!seen')) {
-      responder(who, channel, text, packet);
-    }
   }
 
   function listenForNickChange(oldnick, newnick, channels, message) {
@@ -66,15 +62,50 @@ exports.init = (function () {
   /**
    * Answer '!seen' requests.
    */
-  function responder(who, channel, text, packet) {
-    var params = text.split(/\s/),
-        subject = params[1];
+  function getResponse(channel, subject) {
+    var response = "";
     if (_seen[channel] && _seen[channel][subject]) {
       var last = _seen[channel][subject];
-      _bot.say(channel, who + ": " + subject + " was last seen " + last.action + " at " + last.date);
+      response = subject + " was last seen " + last.action + " at " + last.date;
     } else {
-      _bot.say(channel, who + ": Seen who?");
+      response = "Seen who?"
     }
+    return response;
+  }
+
+  // Hander for channel command interface
+  function respondToChannelCommand(bot) {
+    var _bot = bot;
+
+    function help() {
+      return "<nick>";
+    }
+
+    function run(who, channel, args, packet) {
+      var response = getResponse(channel, args[0]);
+      _bot.say(channel, who + ": " + response);
+    }
+
+    return {"run": run, "help":help};
+  }
+
+
+  /**
+   * PM command handler
+   */
+  function pmResponder(bot) {
+    var _bot = bot;
+
+    function help() {
+      return "<channel> <nick>";
+    }
+
+    function run(packet) {
+      var response = getResponse(packet.args[0], packet.args[1]);
+       _bot.say(packet.nick, response);
+    }
+
+    return {"help":help, "run":run};
   }
 
   /**
@@ -87,6 +118,8 @@ exports.init = (function () {
     _bot.addListener("message#", listenForMessage);
     _bot.addListener("nick", listenForNickChange);
     _bot.addListener("part", listenForPart);
+    _bot.addPmCommand(name, pmResponder(_bot));
+    _bot.addChannelCommand(name, respondToChannelCommand(_bot));
   }
 
   return init;
