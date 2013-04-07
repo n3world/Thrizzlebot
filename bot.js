@@ -172,7 +172,11 @@
     try {
       require(pluginDir + "/" + name).init(bot, pluginConfig);
     } catch(err) {
-      console.error("Failed to load plugin " + name + ": " + err);
+      if (config.haltOnLoadFailure) {
+        throw err;
+      } else {
+        console.error("Failed to load plugin " + name + ": " + err);
+      }
     }
   }
 
