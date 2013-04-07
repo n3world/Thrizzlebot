@@ -2,7 +2,8 @@ exports.init = (function () {
   "use strict";
   var _bot,
       name = "seen",
-      _seen = {};
+      _seen = {},
+      _description = "Respond with the last action a user performed";
 
   function listenForJoin(channel, who) {
     var msg = "joining " + channel;
@@ -83,7 +84,7 @@ exports.init = (function () {
       _bot.say(channel, who + ": " + response);
     }
 
-    return {"run": run, "help":help};
+    return {"run": run, "help":help, minArgs: 1, maxArgs: 1, description: _description};
   }
 
 
@@ -99,7 +100,7 @@ exports.init = (function () {
        _bot.say(packet.nick, response);
     }
 
-    return {"help":help, "run":run};
+    return {"help":help, "run":run, minArgs: 2, maxArgs: 2, description: _description};
   }
 
   /**
