@@ -2,7 +2,8 @@ exports.init = (function () {
   "use strict";
   var _bot,
       name = "seen",
-      _seen = {};
+      _seen = {},
+      _description = "Respond with the last action a user performed";
 
   function listenForJoin(channel, who) {
     var msg = "joining " + channel;
@@ -76,17 +77,14 @@ exports.init = (function () {
   // Hander for channel command interface
   function respondToChannelCommand(bot) {
     var _bot = bot;
-
-    function help() {
-      return "<nick>";
-    }
+    var help = "<nick>";
 
     function run(who, channel, args, packet) {
       var response = getResponse(channel, args[0]);
       _bot.say(channel, who + ": " + response);
     }
 
-    return {"run": run, "help":help};
+    return {"run": run, "help":help, minArgs: 1, maxArgs: 1, description: _description};
   }
 
 
@@ -95,17 +93,14 @@ exports.init = (function () {
    */
   function pmResponder(bot) {
     var _bot = bot;
-
-    function help() {
-      return "<channel> <nick>";
-    }
+    var help = "<channel> <nick>";
 
     function run(packet) {
       var response = getResponse(packet.args[0], packet.args[1]);
        _bot.say(packet.nick, response);
     }
 
-    return {"help":help, "run":run};
+    return {"help":help, "run":run, minArgs: 2, maxArgs: 2, description: _description};
   }
 
   /**

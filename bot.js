@@ -7,25 +7,23 @@
   var _channelCmds = {};
   var _commandChar = "!";
   var _helpName = "help";
+  var _help = "[<cmd>]";
+  var _helpDesc = "Retrieve help for commands";
 
   // Create the bot name
   var bot = new irc.Client(config.server, config.botName, {
     channels: config.channels
   });
 
-  // Common help method for help command
-  function _help() {
-    return "[<cmd>]";
-  }
-
   // Common method for help invocations
   function _helpCommands(_bot, commands, args, target, preface) {
+      var extraResponses = [];
       var response = "";
 
       if (args.length > 0) {
         var command = args[0];
         if (commands[command]) {
-          response += command + " " + commands[command].help();
+          response += command + " " + commands[command].help;
         } else {
           response = "Unknown command: " + command;
         }
@@ -34,16 +32,57 @@
 
         for (var cmd in  commands) {
           response += " " + cmd;
+	  if (commands[cmd].description !== undefined) {
+            extraResponses.push(cmd + " - " + commands[cmd].description)
+	  }
         }
       }
 
       _bot.say(target, preface + response);
+      for (var i in extraResponses) {
+        _bot.say(target, preface + extraResponses[i]);
+      }
   }
 
   // Common method for unknown commands
   function _unknownCommand(bot, commands, command, target, preface) {
      bot.say(target, preface + "Unknown command: " + command);
      _helpCommands(bot, commands, [], target, preface);
+  }
+
+  // validate that the number of arguments are within the expected range
+  function _checkCommandArgs(bot, target, name, command, args, preface) {
+    var errMsg;
+    if (command.minArgs !== undefined && command.minArgs > args.length) {
+      errMsg = "Too few arguments";
+    }
+    if (command.maxArgs !== undefined && command.maxArgs < args.length) {
+      errMsg = "Too many arguments";
+    }
+    if (errMsg !== undefined) {
+      bot.say(target, preface + errMsg);
+      bot.say(target, preface + name + " " + command.help);
+      return false;
+    }
+    return true;
+  }
+
+  // Check to see if the command exists and has valid arguments
+  function _isGoodCommand(bot, target, cmd, commands, args, preface) {
+    if (commands[cmd] !== undefined) {
+      return _checkCommandArgs(bot, target, cmd, commands[cmd], args, preface);
+    }
+    _unknownCommand(bot, commands, cmd, target, preface);
+    return false;
+  }
+
+  // Parse command and args out of a message
+  function _parseCommand(text) {
+    var args = text.split(/\s/g);
+    var command = args[0];
+    args.splice(0, 1);
+
+    return {command: command, args: args};
   }
 
   /**
@@ -53,15 +92,14 @@
    **/
   bot.addListener("pm", function (nick, text, message) {
     var packet = {};
-    packet.nick = nick;
-    packet.args = text.split(/\s/g);
+    var parsedCmd = _parseCommand(text);
+    var command = parsedCmd.command;
 
-    var command = packet.args[0];
-    packet.args.splice(0, 1);
-    if (_pmCmds[command]) {
+    packet.args = parsedCmd.args;
+    packet.nick = nick;
+    
+    if (_isGoodCommand(bot, nick, command, _pmCmds, packet.args, "")) {
       return _pmCmds[command].run(packet);
-    } else {
-      _unknownCommand(bot, _pmCmds, command, nick, "");
     }
   });
 
@@ -69,26 +107,36 @@
    * Add the listener for channel commands
    */ 
   bot.addListener("message#", function(who, channel, text, packet){
-     if (text.charAt(0) == _commandChar) {
-       var args = text.split(/\s/g);
-       var command = args[0];
-       args.splice(0, 1);
-       if (_channelCmds[command]) {
-         _channelCmds[command].run(who, channel, args, packet);
-       } else {
-         _unknownCommand(bot, _channelCmds, command, channel, who + ": ");
-       }
-     }
+    if (text.charAt(0) == _commandChar) {
+      var parsedCmd = _parseCommand(text);
+      var command = parsedCmd.command;
+      var args = parsedCmd.args;
+
+      if (_isGoodCommand(bot, channel, command, _channelCmds, args, who + ": ")) {
+        _channelCmds[command].run(who, channel, args, packet);
+      }
+    }
   });
 
+  /*
+   * All commandClasses have the same interface
+   * required:
+   *   run - function - execute the command
+   *   help - string - to display for help
+   * optional:
+   *   minArgs - int - the minimum number of args the command requires
+   *   maxArgs - int - the maximum number of args the command allows
+   *   description - string - summary of what the command does
+   */
+
   // Method to register for channel commands
-  // commandClass should implement atleast run(packet) and help
+  // commandClass should implement at least run(packet) and help
   bot.addChannelCommand = function(name, commandClass) {
     _channelCmds[_commandChar + name] = commandClass;
   }
 
   // Method to register for pm commands
-  // commandClass should implement atleast run(packet) and help
+  // commandClass should implement at least run(packet) and help
   bot.addPmCommand = function (name, commandClass) {
     _pmCmds[name] = commandClass;
   }
@@ -101,7 +149,7 @@
       _helpCommands(_bot, _channelCmds, args, channel, who + ": ");
     }
 
-    return {"help":_help, "run":run};
+    return {"help":_help, "run":run, description: _helpDesc, maxArgs: 1};
   }(bot))
 
   // Help command plugin for pm
@@ -112,7 +160,7 @@
       _helpCommands(_bot, _pmCmds, packet.args, packet.nick, "");
     }
 
-    return {"help":_help, "run":run};
+    return {"help":_help, "run":run, description: _helpDesc, maxArgs: 1};
   }(bot));
 
   // Load a single plugin
