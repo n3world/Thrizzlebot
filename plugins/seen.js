@@ -76,10 +76,7 @@ exports.init = (function () {
   // Hander for channel command interface
   function respondToChannelCommand(bot) {
     var _bot = bot;
-
-    function help() {
-      return "<nick>";
-    }
+    var help = "<nick>";
 
     function run(who, channel, args, packet) {
       var response = getResponse(channel, args[0]);
@@ -95,10 +92,7 @@ exports.init = (function () {
    */
   function pmResponder(bot) {
     var _bot = bot;
-
-    function help() {
-      return "<channel> <nick>";
-    }
+    var help = "<channel> <nick>";
 
     function run(packet) {
       var response = getResponse(packet.args[0], packet.args[1]);
