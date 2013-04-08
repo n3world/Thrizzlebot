@@ -1,4 +1,4 @@
-(function () {
+module.exports = (function () {
   "use strict";
 
   var irc = require("irc");
