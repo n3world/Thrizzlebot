@@ -5,6 +5,9 @@ module.exports = {
   plugins: {
     haltOnLoadFailure: false,
     dir: "./plugins",
+    welcome: {
+      salutation: "%s WHATUUUUUP"
+    }
     seen: {"key1":"value1"},
     disable: ["badPlugin"]
   }
