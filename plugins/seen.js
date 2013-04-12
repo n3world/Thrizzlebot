@@ -1,9 +1,45 @@
+
+var baseInit = require('thrizzle').PluginCommandInit;
+
+// Object to contain all the state and config of recap
+function Seen(bot) {
+  this.command = "seen"
+  this.help = "<nick>";
+  this.description = "Respond with the last action a user performed";
+  this.minArgs = 1;
+  this.maxArgs = 1;
+
+  this._bot = bot;
+  this._seen = {};
+}
+
+/**
+ * Answer '!seen' requests.
+ */
+Seen.prototype.respondToCommand = function(nick, channel, isPm, args) {
+  var response = "";
+  var subject = args[0];
+  if (this._seen[channel] !== undefined && this._seen[channel][subject] !== undefined) {
+    var last = this._seen[channel][subject];
+    response = subject + " was last seen " + last.action + " at " + last.date;
+  } else {
+    response = "Seen who?"
+  }
+
+  var target;
+  if (isPm) {
+    target = nick;
+  } else {
+    target = channel;
+    response = nick + ": " + response;
+  }
+  
+  this._bot.say(target, response);
+}
+
 exports.init = (function () {
   "use strict";
-  var _bot,
-      name = "seen",
-      _seen = {},
-      _description = "Respond with the last action a user performed";
+  var _bot, _seen;
 
   function listenForJoin(channel, who) {
     var msg = "joining " + channel;
@@ -49,73 +85,29 @@ exports.init = (function () {
    */
   function observer(action, channel, who) {
     if (who !== _bot.userName) {
-      if (!_seen[channel]) {
+      if (_seen[channel] == undefined) {
         _seen[channel] = {};
       }
       _seen[channel][who] = {
         "action": action,
         "date": new Date()
       };
-      console.log(channel, who, action);
     }
-  }
-
-  /**
-   * Answer '!seen' requests.
-   */
-  function getResponse(channel, subject) {
-    var response = "";
-    if (_seen[channel] && _seen[channel][subject]) {
-      var last = _seen[channel][subject];
-      response = subject + " was last seen " + last.action + " at " + last.date;
-    } else {
-      response = "Seen who?"
-    }
-    return response;
-  }
-
-  // Hander for channel command interface
-  function respondToChannelCommand(bot) {
-    var _bot = bot;
-    var help = "<nick>";
-
-    function run(who, channel, args, packet) {
-      var response = getResponse(channel, args[0]);
-      _bot.say(channel, who + ": " + response);
-    }
-
-    return {"run": run, "help":help, minArgs: 1, maxArgs: 1, description: _description};
-  }
-
-
-  /**
-   * PM command handler
-   */
-  function pmResponder(bot) {
-    var _bot = bot;
-    var help = "<channel> <nick>";
-
-    function run(packet) {
-      var response = getResponse(packet.args[0], packet.args[1]);
-       _bot.say(packet.nick, response);
-    }
-
-    return {"help":help, "run":run, minArgs: 2, maxArgs: 2, description: _description};
   }
 
   /**
    * Initialize listeners.
    */
-  function init(bot, config) {
+  return function(bot, config) {
+    var seen = new Seen(bot);
+    _seen = seen._seen;
     _bot = bot;
+
+    baseInit(bot, seen, config, true);
     _bot.addListener("join", listenForJoin);
     _bot.addListener("kick", listenForKick);
     _bot.addListener("message#", listenForMessage);
     _bot.addListener("nick", listenForNickChange);
     _bot.addListener("part", listenForPart);
-    _bot.addPmCommand(name, pmResponder(_bot));
-    _bot.addChannelCommand(name, respondToChannelCommand(_bot));
   }
-
-  return init;
 })();

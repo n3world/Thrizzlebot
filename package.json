@@ -8,11 +8,13 @@
   },
   "repository": "",
   "keywords": [
-    "irc"
+    "irc",
+    "thrizzle"
   ],
   "author": "Mark Henderson (henderson.mark@gmail.com)",
   "license": "BSD",
   "dependencies": {
-    "irc": "~0.3.6"
+    "irc": "~0.3.6",
+    "thrizzle": "0.0.1",
   }
 }
