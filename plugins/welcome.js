@@ -2,14 +2,9 @@ exports.init = (function() {
   "use strict";
   var _bot,
       _config,
-      auth = {},
-      globalConfig = require('../config'),
       name = "welcome",
       util = require('util');
 
-  if(globalConfig.authenticate) {
-    auth = require("./auth");
-  }
   /**
    * Listens for joins and sends a welcome message
   */
