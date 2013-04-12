@@ -15,6 +15,6 @@
   "license": "BSD",
   "dependencies": {
     "irc": "~0.3.6",
-    "thrizzle": "0.0.1",
+    "thrizzle": "0.0.1"
   }
 }
