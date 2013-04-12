@@ -6,7 +6,8 @@ module.exports = {
     haltOnLoadFailure: false,
     dir: "./plugins",
     welcome: {
-      salutation: "%s WHATUUUUUP"
+      salutation: "%s WHATUUUUUP",
+      modes: ["o", "v"]
     }
     seen: {"key1":"value1"},
     disable: ["badPlugin"]
