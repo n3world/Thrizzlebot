@@ -4,12 +4,12 @@ module.exports = {
   botName: "ThrizzleBot-Dev",
   plugins: {
     haltOnLoadFailure: false,
-    dir: "./plugins",
+    /* dir: "./plugins", // Optional, only if you want to move it */
     welcome: {
       salutation: "%s WHATUUUUUP",
       modes: ["o", "v"]
     }
     seen: {"key1":"value1"},
-    disable: ["badPlugin"]
+    /* disable: ["badPlugin"] // Optional */
   }
 };

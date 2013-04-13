@@ -194,7 +194,7 @@ module.exports = (function () {
     if (config["dir"]) {
       pluginDir = config["dir"];
     } else {
-      pluginDir = "./plugins";
+      pluginDir = __dirname + "/plugins";
     }
 
     var fs = require("fs");
