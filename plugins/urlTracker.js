@@ -1,5 +1,5 @@
 
-var baseInit = require('thrizzle').PluginCommandInit;
+var baseInit = require('../lib/thrizzle').PluginCommandInit;
 
 function UrlTracker(bot) {
   this.maxSize = 100;

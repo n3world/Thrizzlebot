@@ -1,5 +1,5 @@
 
-var baseInit = require('thrizzle').PluginCommandInit;
+var baseInit = require('../lib/thrizzle').PluginCommandInit;
 
 // Object to contain all the state and config of recap
 function Recap(bot) {
