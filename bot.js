@@ -32,9 +32,9 @@ module.exports = (function () {
 
         for (var cmd in  commands) {
           response += " " + cmd;
-	  if (commands[cmd].description !== undefined) {
+          if (commands[cmd].description !== undefined) {
             extraResponses.push(cmd + " - " + commands[cmd].description)
-	  }
+          }
         }
       }
 
@@ -78,9 +78,28 @@ module.exports = (function () {
 
   // Parse command and args out of a message
   function _parseCommand(text) {
-    var args = text.split(/\s/g);
-    var command = args[0];
-    args.splice(0, 1);
+    var args = [],
+        regex = /'((\\'|[^'])*)'|"((\\"|[^"])*)"|(\\ |[^ ])+|[\w-]+/g,
+        match,
+        command,
+        isCommand = true,
+	arg;
+
+    while (match = regex.exec(text)) {
+      if (match[1] !== undefined) {
+        arg = match[1];
+      } else if (match[3] !== undefined) {
+        arg = match[3];
+      } else {
+        arg = match[0];
+      }
+      if (isCommand) {
+        command = arg;
+        isCommand = false;
+      } else {
+        args.push(arg);
+      }
+    }
 
     return {command: command, args: args};
   }
