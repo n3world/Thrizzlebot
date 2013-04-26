@@ -50,6 +50,18 @@ UrlTracker.prototype.respondToCommand = function(nick, channel, isPm, args) {
   }
 }
 
+UrlTracker.prototype.trackMessage = function(nick, channel, text) {
+  if (this._urlRegex.test(text)) {
+    if (this._urls[channel] === undefined) {
+      this._urls[channel] = [];
+    }
+
+    var len = this._urls[channel].unshift({nick: nick, msg: text});
+    if (len > this.maxSize) {
+      this._urls[channel].splice(this.maxSize, len - this.maxSize);
+    }
+  }
+}
 
 exports.init = (function() {
   "use strict";
@@ -57,16 +69,7 @@ exports.init = (function() {
 
   // Handle new messages and if they have a url add them to the list
   function listenForMessage(who, channel, text, packet) {
-    if (urlTracker._urlRegex.test(text)) {
-      if (urlTracker._urls[channel] === undefined) {
-        urlTracker._urls[channel] = [];
-      }
-
-      var len = urlTracker._urls[channel].unshift({nick: who, msg: text});
-      if (len > urlTracker.maxSize) {
-        urlTracker._urls[channel].splice(urlTracker.maxSize, len - urlTracker.maxSize);
-      }
-    }
+    urlTracker.trackMessage(who, channel, text);
   }
 
   return function(bot, config) {
