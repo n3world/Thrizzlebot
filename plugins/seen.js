@@ -72,8 +72,6 @@ exports.init = (function () {
 
   function listenForPart(channel, nick, reason, message) {
     var msg = "leaving " + channel;
-    console.log(reason);
-    console.log(message);
     if (reason) {
       msg += " saying: '" + reason + "'";
     }
