@@ -26,10 +26,11 @@
   "author": "No Pilots, No Demos <irc://irc.freenode.net#npnd>",
   "license": "BSD",
   "dependencies": {
-    "irc": "~0.3.6"
+    "irc": "~0.3.6",
+    "htmlparser2": "3.0.5"
   },
   "bundledDependencies": [
-    "irc"
+    "irc", "htmlparser2"
   ],
   "preferGlobal": false
 }
