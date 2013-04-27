@@ -86,7 +86,7 @@ UrlTracker.prototype._getDetails = function(urlInfo) {
     url = "http://" + urlInfo.url;
   } else if (protocol == "http:") {
     client = this._http;
-  } else if(protocol == "https") {
+  } else if(protocol == "https:") {
     client = this._https;
   } else {
     return;
@@ -135,7 +135,9 @@ UrlTracker.prototype._parseDetails = function(page, urlInfo) {
 function UrlInfo(nick, url) {
   this.nick = nick;
   this.url = url;
+
   this._extraInfo = [];
+  this._encoder = new require('node-html-encoder').Encoder('entity');
 }
 
 UrlInfo.prototype.toString = function() {
@@ -156,7 +158,7 @@ UrlInfo.prototype.toString = function() {
  * @head whether or not insert this at the head of the list of information
  */ 
 UrlInfo.prototype.addExtra = function(name, value, head) {
-  this[name] = unescape(value);
+  this[name] = this._encoder.htmlDecode(value.trim());
   if (head) {
     this._extraInfo.unshift(name);
   } else {
