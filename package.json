@@ -27,10 +27,12 @@
   "license": "BSD",
   "dependencies": {
     "irc": "~0.3.6",
-    "htmlparser2": "3.0.5"
+    "htmlparser2": "~3.0.5",
+    "node-html-encoder": "0.0.2"
   },
   "bundledDependencies": [
-    "irc", "htmlparser2"
+    "irc",
+    "htmlparser2"
   ],
   "preferGlobal": false
 }
