@@ -9,6 +9,8 @@ module.exports = (function () {
   var _helpName = "help";
   var _help = "[<cmd>]";
   var _helpDesc = "Retrieve help for commands";
+  var _commandRegex = /^.\w"/;
+  var _validCommand = /^\w+$/
 
   // Create the bot name
   var bot = new irc.Client(config.server, config.botName, {
@@ -83,7 +85,7 @@ module.exports = (function () {
         match,
         command,
         isCommand = true,
-	arg;
+        arg;
 
     while (match = regex.exec(text)) {
       if (match[1] !== undefined) {
@@ -127,6 +129,10 @@ module.exports = (function () {
    */ 
   bot.addListener("message#", function(who, channel, text, packet){
     if (text.charAt(0) == _commandChar) {
+      if (!_commandRegex.test(text)) {
+        // this isn't really a command so ignore it
+        return;
+      }
       var parsedCmd = _parseCommand(text);
       var command = parsedCmd.command;
       var args = parsedCmd.args;
@@ -136,6 +142,12 @@ module.exports = (function () {
       }
     }
   });
+
+  function _validateCommandName(name) {
+    if (!_validCommand.test(name)) {
+      throw "Invalid command name: " + name;
+    }
+  }
 
   /*
    * All commandClasses have the same interface
@@ -151,12 +163,14 @@ module.exports = (function () {
   // Method to register for channel commands
   // commandClass should implement at least run(packet) and help
   bot.addChannelCommand = function(name, commandClass) {
+    _validateCommandName(name);
     _channelCmds[_commandChar + name] = commandClass;
   }
 
   // Method to register for pm commands
   // commandClass should implement at least run(packet) and help
   bot.addPmCommand = function (name, commandClass) {
+    _validateCommandName(name);
     _pmCmds[name] = commandClass;
   }
 
