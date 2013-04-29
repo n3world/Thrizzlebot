@@ -93,8 +93,11 @@ UrlTracker.prototype._getDetails = function(urlInfo) {
   }
 
   client.get(url, function(res) {
+    var statusCode = res.statusCode;
     res.on('data', function (chunk) {
-      _this._parseDetails(chunk, urlInfo);
+      if (statusCode == 200) {
+        _this._parseDetails(chunk, urlInfo);
+      }
     });
   }).on('error', function(e) {/* eat it */});
 }
