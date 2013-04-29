@@ -9,6 +9,7 @@ function UrlTracker(bot) {
   this.description = "Print the most recent urls seen in a channel";
   this.maxArgs = 2;
   this.respondAsPmAlways = true;
+  this.resolveDetails = true;
 
   this._bot = bot;
   this._urls = {};
@@ -75,6 +76,10 @@ UrlTracker.prototype.trackMessage = function(nick, channel, text) {
 
 // Request the document described by urlInfo and update urlInfo with details
 UrlTracker.prototype._getDetails = function(urlInfo) {
+  if (!this.resolveDetails) {
+    return;
+  }
+
   var body;
   var url = this._url.parse(urlInfo.url);
   var client,
