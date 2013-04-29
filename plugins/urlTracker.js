@@ -11,7 +11,7 @@ function UrlTracker(bot) {
 
   this._bot = bot;
   this._urls = {};
-  this._urlRegex = /((([A-Za-z]{3,9}:(?:\/\/)?)(?:[-;:&=\+\$,\w]+@)?[A-Za-z0-9.-]+|(?:www.|[-;:&=\+\$,\w]+@)[A-Za-z0-9.-]+)((?:\/[\+~%\/.\w-_]*)?\??(?:[-\+=&;%@.\w_]*)#?(?:[.\!\/\\w]*))?)/g;
+  this._urlRegex = /(https?:\/\/)?(([A-Z\-a-z1-9]+\.)+[A-Za-z]{2,4}|((25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?))((?:\/[\+~%\/.\w-_]*)?\??(?:[-\+=&;%@.\w_]*)#?(?:[.\!\/\\w]*))?/g;
 
   this._url = require('url');
   this._http = require('http');
@@ -96,7 +96,7 @@ UrlTracker.prototype._getDetails = function(urlInfo) {
     res.on('data', function (chunk) {
       _this._parseDetails(chunk, urlInfo);
     });
-  });
+  }).on('error', function(e) {/* eat it */});
 }
 
 // Parse extra details out of the html body
