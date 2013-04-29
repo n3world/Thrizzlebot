@@ -8,6 +8,7 @@ function UrlTracker(bot) {
   this.help = "[<nick>] [<numberOfUrls>]";
   this.description = "Print the most recent urls seen in a channel";
   this.maxArgs = 2;
+  this.respondAsPmAlways = true;
 
   this._bot = bot;
   this._urls = {};
@@ -42,7 +43,7 @@ UrlTracker.prototype.respondToCommand = function(nick, channel, isPm, args) {
      }
 
      var target = channel;
-     if (isPm) {
+     if (this.respondAsPmAlways || isPm) {
        target = nick;
      }
 
