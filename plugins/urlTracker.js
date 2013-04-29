@@ -2,15 +2,18 @@
 var baseInit = require('../lib/thrizzle').PluginCommandInit;
 
 function UrlTracker(bot) {
+  // These values can all be overriden in the config
   this.maxSize = 100;
   this.defaultReturn = 10;
   this.command = "urls"
   this.help = "[<nick>] [<numberOfUrls>]";
   this.description = "Print the most recent urls seen in a channel";
-  this.maxArgs = 2;
   this.respondAsPmAlways = true;
   this.resolveDetails = true;
+  this.announceDetails = false;
 
+  // Internal object variables
+  this.maxArgs = 2;
   this._bot = bot;
   this._urls = {};
   this._urlRegex = /(https?:\/\/)?(([A-Z\-a-z1-9]+\.)+[A-Za-z]{2,4}|((25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?))((?:\/[\+~%\/.\w-_]*)?\??(?:[-\+=&;%@.\w_]*)#?(?:[.\!\/\\w]*))?/g;
@@ -65,7 +68,7 @@ UrlTracker.prototype.trackMessage = function(nick, channel, text) {
       this._urls[channel] = [];
     }
 
-    var urlInfo = new UrlInfo(nick, match[0]);
+    var urlInfo = new UrlInfo(channel, nick, match[0]);
     var len = this._urls[channel].unshift(urlInfo);
     if (len > this.maxSize) {
       this._urls[channel].splice(this.maxSize, len - this.maxSize);
@@ -100,9 +103,14 @@ UrlTracker.prototype._getDetails = function(urlInfo) {
 
   client.get(url, function(res) {
     var statusCode = res.statusCode;
+    var needsAnnounce = true;
+
     res.on('data', function (chunk) {
       if (statusCode == 200) {
         _this._parseDetails(chunk, urlInfo);
+        if (needsAnnounce) {
+          needsAnnounce = _this._announceDetails(urlInfo);
+        }
       }
     });
   }).on('error', function(e) {/* eat it */});
@@ -117,10 +125,9 @@ UrlTracker.prototype._parseDetails = function(page, urlInfo) {
     onopentag: function(name, attribs) {
       if (name == "title") {
         textDestination = name;
-	extraHead = true;
+        extraHead = true;
       } else if (name == "meta" && attribs.name == "description") {
         urlInfo.addExtra(attribs.name, attribs.content);
-
       }
     },
 
@@ -140,8 +147,26 @@ UrlTracker.prototype._parseDetails = function(page, urlInfo) {
   parser.end();
 }
 
+/**
+ * announce the resolved url details to the channel
+ *
+ * @return true if this function should be called again
+ */
+UrlTracker.prototype._announceDetails = function(urlInfo) {
+  if (!this.announceDetails) {
+    return false;
+  }
+
+  if (urlInfo.hasExtra()) {
+    this._bot.say(urlInfo.channel, urlInfo.toString());
+    return false;
+  }
+  return true;
+}
+
 // Helper object to contain url information
-function UrlInfo(nick, url) {
+function UrlInfo(channel, nick, url) {
+  this.channel = channel;
   this.nick = nick;
   this.url = url;
 
@@ -149,18 +174,25 @@ function UrlInfo(nick, url) {
   this._encoder = new require('node-html-encoder').Encoder('entity');
 }
 
+/**
+ * @param extras list of extras to include in the string.
+ *     If null all extras are included
+ *
+ * @return a string representation of this object
+ */
 UrlInfo.prototype.toString = function() {
   var string = this.nick + ": "  + this.url;
 
   for (var i  in this._extraInfo) {
-    if (this[this._extraInfo[i]] !== undefined) {
-      string += "\n    " + this[this._extraInfo[i]];
+    var name = this._extraInfo[i];
+    if (this[name] !== undefined) {
+      string += "\n    " + this[name];
     }
   }
   return string;
 }
 
-/*
+/**
  * Add in extra url information
  * @param name name of information
  * @value information to add
@@ -173,6 +205,13 @@ UrlInfo.prototype.addExtra = function(name, value, head) {
   } else {
     this._extraInfo.push(name);
   }
+}
+
+/**
+ * @return true if this urlInfo has any extra info
+ */
+UrlInfo.prototype.hasExtra = function() {
+  return this._extraInfo.length > 0;
 }
 
 // Create the init function for a urlTracker plugin
