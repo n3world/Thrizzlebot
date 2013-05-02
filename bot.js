@@ -9,7 +9,7 @@ module.exports = (function () {
   var _helpName = "help";
   var _help = "[<cmd>]";
   var _helpDesc = "Retrieve help for commands";
-  var _commandRegex = /^.\w"/;
+  var _commandRegex = /^.\w/;
   var _validCommand = /^\w+$/
 
   // Create the bot name
