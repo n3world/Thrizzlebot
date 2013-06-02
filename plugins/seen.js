@@ -1,111 +1,91 @@
-
-var baseInit = require('../lib/thrizzle').PluginCommandInit;
+var ConfigurablePlugin = require("../lib/thrizzle").ConfigurablePlugin;
+var util = require('util');
 
 // Object to contain all the state and config of recap
-function Seen(bot) {
-  this.command = "seen"
+function Seen(bot, config, channel) {
+  ConfigurablePlugin.call(this, [ "command" ]);
+  this.command = "seen";
   this.help = "<nick>";
   this.description = "Respond with the last action a user performed";
   this.minArgs = 1;
   this.maxArgs = 1;
 
   this._bot = bot;
+  this._channel = channel;
   this._seen = {};
+
+  this.applyConfig(config);
 }
 
+util.inherits(Seen, ConfigurablePlugin);
+
 /**
- * Answer '!seen' requests.
+ * Answer 'seen' requests.
  */
-Seen.prototype.respondToCommand = function(nick, channel, isPm, args) {
+Seen.prototype.run = function(nick, args, isPm) {
   var response = "";
   var subject = args[0];
-  if (this._seen[channel] !== undefined && this._seen[channel][subject] !== undefined) {
-    var last = this._seen[channel][subject];
+  if (this._seen[subject] !== undefined) {
+    var last = this._seen[subject];
     response = subject + " was last seen " + last.action + " at " + last.date;
   } else {
-    response = "Seen who?"
+    response = "Seen who?";
   }
 
   var target;
   if (isPm) {
     target = nick;
   } else {
-    target = channel;
+    target = this._channel;
     response = nick + ": " + response;
   }
-  
+
   this._bot.say(target, response);
-}
+};
 
-exports.init = (function () {
-  "use strict";
-  var _bot, _seen;
+Seen.prototype.join = function(who) {
+  var msg = "joining " + this._channel;
+  this._observer(msg, who);
+};
 
-  function listenForJoin(channel, who) {
-    var msg = "joining " + channel;
-    observer(msg, channel, who);
+Seen.prototype.kick = function(nick, by, reason) {
+  var msg = "getting kicked by " + by + " out of " + this._channel;
+  if (reason) {
+    msg += " because: '" + reason + "'";
   }
+  this._observer(msg, nick);
+};
 
-  function listenForKick(channel, nick, by, reason, message) {
-    var msg = "getting kicked by " + by + " out of " + channel;
-    if (reason) {
-      msg += " because: '" + reason + "'";
-    }
-    observer(msg, channel, nick);
+Seen.prototype.message = function(who, text) {
+  var msg = "saying: '" + text + "'";
+  this._observer(msg, who);
+};
+
+Seen.prototype.nick = function(oldnick, newnick) {
+  var msg = "changing nicks from " + oldnick + " to " + newnick;
+  this._observer(msg, oldnick);
+  this._observer(msg, newnick);
+};
+
+Seen.prototype.part = function(nick, reason) {
+  var msg = "leaving " + this._channel;
+  if (reason) {
+    msg += " saying: '" + reason + "'";
   }
+  this._observer(msg, nick);
+};
 
-  function listenForMessage(who, channel, text, packet) {
-    // Observe the action
-    var msg = "saying: '" + text + "'";
-    observer(msg, channel, who);
+Seen.prototype._observer = function(action, who) {
+  if (who !== this._bot.userName) {
+    this._seen[who] = {
+      "action" : action,
+      "date" : new Date()
+    };
   }
+};
 
-  function listenForNickChange(oldnick, newnick, channels, message) {
-    var i,
-        msg = "changing nicks from " + oldnick + " to " + newnick;
-    // Record both the old and the new nick for all channels
-    for (i = channels.length - 1; 0 <= i; i -= 1) {
-      observer(msg, channels[i], oldnick);
-      observer(msg, channels[i], newnick);
-    }
-  }
+exports.init = function(bot, manager, config, channel) {
+  return new Seen(bot, config, channel);
+};
 
-  function listenForPart(channel, nick, reason, message) {
-    var msg = "leaving " + channel;
-    if (reason) {
-      msg += " saying: '" + reason + "'";
-    }
-    observer(msg, channel, nick);
-  }
-
-  /**
-   * Record when we observe an action by a user.
-   */
-  function observer(action, channel, who) {
-    if (who !== _bot.userName) {
-      if (_seen[channel] == undefined) {
-        _seen[channel] = {};
-      }
-      _seen[channel][who] = {
-        "action": action,
-        "date": new Date()
-      };
-    }
-  }
-
-  /**
-   * Initialize listeners.
-   */
-  return function(bot, config) {
-    var seen = new Seen(bot);
-    _seen = seen._seen;
-    _bot = bot;
-
-    baseInit(bot, seen, config, true);
-    _bot.addListener("join", listenForJoin);
-    _bot.addListener("kick", listenForKick);
-    _bot.addListener("message#", listenForMessage);
-    _bot.addListener("nick", listenForNickChange);
-    _bot.addListener("part", listenForPart);
-  }
-})();
+exports.type = [ 'channel' ];

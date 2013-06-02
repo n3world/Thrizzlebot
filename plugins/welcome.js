@@ -1,43 +1,38 @@
-exports.init = (function() {
-  "use strict";
-  var _bot,
-      _config,
-      name = "welcome",
-      util = require('util');
+var ConfigurablePlugin = require("../lib/thrizzle").ConfigurablePlugin;
+var util = require('util');
 
-  /**
-   * Listens for joins and sends a welcome message
-  */
-  function listenForMode(channel, by, mode, argument, message) {
-    var modes = message.args[1],
-        pattern,
-        salutation,
-        who = argument,
-        valid = false;
+function Welcome(bot, config, channel) {
+  ConfigurablePlugin.call(this, ["salutation", "modes"]);
+  this.salutation = "Welcome %s";
+  this.modes = ["o"];
+  
+  this._bot = bot;
+  this._channel = channel;
+  
+  this.applyConfig(config);
+}
 
-    if (who !== _bot.nick) {
-      _config.modes.map(function(mode) {
-        if(modes.indexOf(mode) > -1) {
-          valid = true;
-        }
-      });
+util.inherits(Welcome, ConfigurablePlugin);
 
-      if(valid === true) {
-        pattern = _config.salutation;
-        salutation = util.format(pattern, who);
-        _bot.say(channel, salutation);
+Welcome.prototype.addMode = function(by, mode, argument, message) {
+  var modes = message.args[1], who = argument, valid = false, salutation;
+
+  if (who !== this._bot.nick) {
+    this.modes.map(function(mode) {
+      if (modes.indexOf(mode) > -1) {
+        valid = true;
       }
+    });
+
+    if (valid === true) {
+      salutation = util.format(this.salutation, who);
+      this._bot.say(this._channel, salutation);
     }
   }
+};
 
-  /**
-   * Initialize listeners.
-   */
-  function init(bot, config) {
-    _bot = bot;
-    _config = config;
-    _bot.addListener("+mode", listenForMode);
-  }
+exports.init = function(bot, manager, config, channel) {
+  return new Welcome(bot, config, channel);
+};
 
-  return init;
-})();
+exports.type = [ 'channel' ];

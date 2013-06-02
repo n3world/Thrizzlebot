@@ -1,5 +1,7 @@
 module.exports = {
-  channels: ["#npnd-dev"],
+  channels: {"#npnd-dev" :
+    {welcome: {salutation: "Welcome to #npnd-dev %s"}} // Provide channel specific configuration
+  },
   server: "irc.freenode.net",
   botName: "ThrizzleBot-Dev",
   plugins: {
@@ -10,6 +12,6 @@ module.exports = {
       modes: ["o", "v"]
     }
     seen: {"key1":"value1"},
-    /* disable: ["badPlugin"] // Optional */
+    badPlugin: false // This disables a plugin
   }
 };
