@@ -1,0 +1,152 @@
+// This is more documentation for how to write a plugin
+
+/**
+ * Initialize the plugin
+ * 
+ * @param bot
+ *            irc client
+ * @param manager
+ *            plugin manager
+ * @param config
+ *            configuratoin for this plugin
+ * @param channel
+ *            this plugin is bound to
+ * @returns
+ */
+function MyPlugin(bot, manager, config, channel) {
+  // If this is a command all of these variables must be set
+  this.command = "example";
+  this.help = "<arg1> <arg2>";
+
+  // Optional arguments for commands
+  this.description = "Description of what this command does";
+  this.minArgs = 1; // Minimum arguments for this command
+  this.maxArgs = 2; // Maximum arguments for this command
+}
+
+// Functions which need to be implemented for commands
+
+/**
+ * @param nick
+ *            nick of person who is running the command
+ * @param args
+ *            arguments for the command
+ * @param isPm
+ *            whether or not this command was don from a pm
+ */
+MyPlugin.prototype.run = function(nick, args, isPm) {
+};
+
+// Optional functoins for all plugins
+
+/**
+ * Handle messages sent in the channel
+ * 
+ * @param who
+ *            the nick who sent the message
+ * @param text
+ *            the text of the message
+ * @param message
+ *            the raw irc message
+ * 
+ */
+MyPlugin.prototype.message = function(who, text, message) {
+};
+
+/**
+ * Handle a join message from the channel
+ * 
+ * @param who
+ *            the nick joining the channel
+ * @param message
+ *            the raw irc message
+ */
+MyPlugin.prototype.join = function(who, message) {
+};
+
+/**
+ * Handle a part message from the channel
+ * 
+ * @param who
+ *            The nick leaving the channel
+ * @param reason
+ *            why they left
+ * @param message
+ *            the raw irc message
+ */
+MyPlugin.prototype.part = function(who, reason, message) {
+};
+
+/**
+ * Handle a nick being kicked from the channel
+ * 
+ * @param who
+ *            the nick that was kicked out
+ * @param by
+ *            the nick who did the kicking
+ * @param reason
+ *            given for the kicking
+ * @param message
+ *            the raw irc message
+ */
+MyPlugin.prototype.kick = function(who, by, reason, message) {
+};
+
+/**
+ * Handle a nick change in the channel
+ * 
+ * @param oldNick
+ *            old nick
+ * @param newNick
+ *            new nick
+ * @param message
+ *            the raw irc message
+ */
+MyPlugin.prototype.nick = function(oldNick, newNick, message) {
+};
+
+/**
+ * Handle the addition of a mode to somebody
+ * 
+ * @param who
+ *            the nick who changed the mode
+ * @param mode
+ *            the mode change
+ * @param modeArgs
+ *            the person whose mode was changed
+ * @param message
+ *            the raw irc message
+ */
+MyPlugin.prototype.addMode = function(who, mode, modeArgs, message) {
+};
+
+/**
+ * Handle the subtraction of a mode to somebody
+ * 
+ * @param who
+ *            the nick who changed the mode
+ * @param mode
+ *            the mode change
+ * @param modeArgs
+ *            the person whose mode was changed
+ * @param message
+ *            the raw irc message
+ */
+MyPlugin.prototype.subMode = function(who, mode, modeArgs, message) {
+};
+
+/**
+ * init must be exported to initialize the plugin
+ */
+exports.init = function(bot, manager, config, channel) {
+  return new MyPlugin(bot, manager, config, channel);
+};
+
+/**
+ * The describes what types this plugin supports
+ * 
+ * global - a plugin which runs without a channel
+ * 
+ * channel - a plugin that runs in a channel
+ */
+exports.type = []; // The type of plugin this is global or channel

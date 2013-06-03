@@ -1,1 +1,7 @@
 config.js
+.*
+!.gitignore
+!.npmignore 
+!.editorconfig
+!.jshintrc
+
