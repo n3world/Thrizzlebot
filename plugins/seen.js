@@ -1,9 +1,10 @@
 var ConfigurablePlugin = require("../lib/thrizzle").ConfigurablePlugin;
+var ip = require("../lib/input_parsers");
 var util = require('util');
 
 // Object to contain all the state and config of recap
 function Seen(bot, config, channel) {
-  ConfigurablePlugin.call(this, [ "command" ]);
+  ConfigurablePlugin.call(this, { "command" : ip.commandNameParser});
   this.command = "seen";
   this.help = "<nick>";
   this.description = "Respond with the last action a user performed";
