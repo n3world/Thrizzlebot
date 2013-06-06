@@ -1,8 +1,9 @@
 var ConfigurablePlugin = require("../lib/thrizzle").ConfigurablePlugin;
+var ip = require("../lib/input_parsers");
 var util = require('util');
 
 function Welcome(bot, config, channel) {
-  ConfigurablePlugin.call(this, ["salutation", "modes"]);
+  ConfigurablePlugin.call(this, {"salutation" : undefined, "modes" : ip.modesParser});
   this.salutation = "Welcome %s";
   this.modes = ["o"];
   

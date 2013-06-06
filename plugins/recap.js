@@ -1,9 +1,11 @@
 var ConfigurablePlugin = require("../lib/thrizzle").ConfigurablePlugin;
+var ip = require("../lib/input_parsers");
 var util = require('util');
 
 // Object to contain all the state and config of recap
 function Recap(bot, config) {
-  ConfigurablePlugin.call(this, [ "maxSize", "defaultReturn", "command" ]);
+  ConfigurablePlugin.call(this, { "maxSize" : ip.createIntParser(10, 1000),
+    "defaultReturn" : ip.createIntParser(1, 100), "command" : ip.commandNameParser });
   this.maxSize = 100;
   this.defaultReturn = 20;
   this.command = "recap";

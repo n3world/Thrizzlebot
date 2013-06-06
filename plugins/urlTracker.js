@@ -1,9 +1,12 @@
 var ConfigurablePlugin = require("../lib/thrizzle").ConfigurablePlugin;
+var ip = require("../lib/input_parsers");
 var util = require('util');
 
 function UrlTracker(bot, config, channel) {
-  ConfigurablePlugin.call(this, [ "maxSize", "defaultReturn", "command", "respondAsPmAlways",
-      "resolveDetails", "announceDetails" ]);
+  ConfigurablePlugin.call(this, { "maxSize" : ip.createIntParser(10, 1000),
+    "defaultReturn" : ip.createIntParser(1, 50), "command" : ip.commandNameParser,
+    "respondAsPmAlways" : ip.booleanParser, "resolveDetails" : ip.booleanParser,
+    "announceDetails" : ip.booleanParser });
   // These values can all be overriden in the config
   this.maxSize = 100;
   this.defaultReturn = 10;
