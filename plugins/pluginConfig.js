@@ -3,11 +3,11 @@ var ip = require("../lib/input_parsers");
 var util = require('util');
 
 function PluginConfig(bot, manager, config, channel) {
-  ConfigurablePlugin.call(this, {"command" : ip.commandNameParser, "modes": undefined});
+  ConfigurablePlugin.call(this, {"command" : ip.commandNameParser, "mode": ip.modeParser});
   this.command = "config";
   // Channel modes a user needs to have to run a configure command
   // No modes means everybody can
-  this.modes = ["@"];
+  this.mode = "o";
 
   this.description = "Configure plugins";
   this.minArgs = 1;
@@ -121,37 +121,20 @@ PluginConfig.prototype.run = function(who, args, isPm) {
         message = "Incorrect arguments: " + command + " " + command.args.join(" ");
       }
     } else {
-      this._bot.whois(who, function(whois) {
-        if (_this._hasPerms(whois.channels)) {
-          message = _this._cmds[command].run.apply(undefined, args);
+      this._manager.checkMode(who, this.mode, function(hasMode) {
+        var checkMessage;
+        if (hasMode) {
+          checkMessage = _this._cmds[command].run.apply(undefined, args);
         } else {
-          message = "Not enough permissions";
+          checkMessage = "Not enough permissions";
         }
 
-        respond(message);
+        respond(checkMessage);
       });
     }
   }
 
   respond(message);
-};
-
-/**
- * Check to see if the user has permissions
- * @param channels
- * @returns {Boolean}
- */
-PluginConfig.prototype._hasPerms = function(channels) {
-  if (this.modes.length == 0) {
-    return true;
-  }
-  for (var i in this.modes) {
-    var nickMode = this.modes[i] + this._channel;
-    if (channels.indexOf(nickMode) >= 0) {
-      return true;
-    }
-  }
-  return false;
 };
 
 exports.init = function(bot, manager, config, channel) {
