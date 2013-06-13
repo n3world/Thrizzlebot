@@ -1,9 +1,9 @@
-var ConfigurablePlugin = require("../lib/thrizzle").ConfigurablePlugin;
+var PmOnlyCommandPlugin = require("../lib/thrizzle").PmOnlyCommandPlugin;
 var ip = require("../lib/input_parsers");
 var util = require('util');
 
 function PluginConfig(bot, manager, config, channel) {
-  ConfigurablePlugin.call(this, {"command" : ip.commandNameParser, "mode": ip.modeParser});
+  PmOnlyCommandPlugin.call(this, bot, {"command" : ip.commandNameParser, "mode": ip.modeParser});
   this.command = "config";
   // Channel modes a user needs to have to run a configure command
   // No modes means everybody can
@@ -92,11 +92,11 @@ function PluginConfig(bot, manager, config, channel) {
   this.applyConfig(config);
 }
 
-util.inherits(PluginConfig, ConfigurablePlugin);
+util.inherits(PluginConfig, PmOnlyCommandPlugin);
 
-PluginConfig.prototype.run = function(who, args, isPm) {
-  var target = isPm ? who : this._channel;
-  var prefix = isPm ? "" : who + ": ";
+PluginConfig.prototype.runCommand = function(who, args, toPm) {
+  var target = toPm ? who : this._channel;
+  var prefix = toPm ? "" : who + ": ";
   var message = undefined;
   var _this = this;
   
@@ -118,7 +118,7 @@ PluginConfig.prototype.run = function(who, args, isPm) {
       if (cmd.args.length == 0) {
         message  = command + " does not take any arguments";
       } else {
-        message = "Incorrect arguments: " + command + " " + command.args.join(" ");
+        message = "Incorrect arguments: " + command + " " + cmd.args.join(" ");
       }
     } else {
       this._manager.checkMode(who, this.mode, function(hasMode) {
