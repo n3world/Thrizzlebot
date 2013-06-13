@@ -1,10 +1,10 @@
-var ConfigurablePlugin = require("../lib/thrizzle").ConfigurablePlugin;
+var PmOnlyCommandPlugin = require("../lib/thrizzle").PmOnlyCommandPlugin;
 var ip = require("../lib/input_parsers");
 var util = require('util');
 
 // Object to contain all the state and config of recap
 function Recap(bot, config) {
-  ConfigurablePlugin.call(this, { "maxSize" : ip.createIntParser(10, 1000),
+  PmOnlyCommandPlugin.call(this, bot, { "maxSize" : ip.createIntParser(10, 1000),
     "defaultReturn" : ip.createIntParser(1, 100), "command" : ip.commandNameParser });
   this.maxSize = 100;
   this.defaultReturn = 20;
@@ -21,7 +21,7 @@ function Recap(bot, config) {
   this.applyConfig(config);
 }
 
-util.inherits(Recap, ConfigurablePlugin);
+util.inherits(Recap, PmOnlyCommandPlugin);
 
 Recap.prototype._lastSeen = function(nick) {
   var lastSeen = 0;
@@ -32,7 +32,7 @@ Recap.prototype._lastSeen = function(nick) {
 };
 
 // respondToCommand implementation for recap
-Recap.prototype.run = function(nick, args, isPm) {
+Recap.prototype.runCommand = function(nick, args) {
   var numToReturn = this.defaultReturn;
   var lastSeen = this._lastSeen(nick);
 
@@ -51,9 +51,9 @@ Recap.prototype.run = function(nick, args, isPm) {
 
   // send response
   if (recaps.length > 0) {
-    this._bot.say(nick, recaps.join("\n"));
+    return recaps;
   } else {
-    this._bot.say(nick, "Nothing has happened");
+    return "Nothing has happened";
   }
 };
 

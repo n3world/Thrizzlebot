@@ -1,10 +1,10 @@
-var ConfigurablePlugin = require("../lib/thrizzle").ConfigurablePlugin;
+var PmOnlyCommandPlugin = require("../lib/thrizzle").PmOnlyCommandPlugin;
 var ip = require("../lib/input_parsers");
 var util = require('util');
 
 // Object to contain all the state and config of recap
 function Seen(bot, config, channel) {
-  ConfigurablePlugin.call(this, { "command" : ip.commandNameParser});
+  PmOnlyCommandPlugin.call(this, bot, { "command" : ip.commandNameParser});
   this.command = "seen";
   this.help = "<nick>";
   this.description = "Respond with the last action a user performed";
@@ -18,12 +18,12 @@ function Seen(bot, config, channel) {
   this.applyConfig(config);
 }
 
-util.inherits(Seen, ConfigurablePlugin);
+util.inherits(Seen, PmOnlyCommandPlugin);
 
 /**
  * Answer 'seen' requests.
  */
-Seen.prototype.run = function(nick, args, isPm) {
+Seen.prototype.runCommand = function(nick, args, toPm) {
   var response = "";
   var subject = args[0];
   if (this._seen[subject] !== undefined) {
@@ -33,15 +33,11 @@ Seen.prototype.run = function(nick, args, isPm) {
     response = "Seen who?";
   }
 
-  var target;
-  if (isPm) {
-    target = nick;
-  } else {
-    target = this._channel;
+  if (!toPm) {
     response = nick + ": " + response;
   }
 
-  this._bot.say(target, response);
+  return response;
 };
 
 Seen.prototype.join = function(who) {

@@ -1,17 +1,15 @@
-var ConfigurablePlugin = require("../lib/thrizzle").ConfigurablePlugin;
+var PmOnlyCommandPlugin = require("../lib/thrizzle").PmOnlyCommandPlugin;
 var ip = require("../lib/input_parsers");
 var util = require('util');
 
 function UrlTracker(bot, config, channel) {
-  ConfigurablePlugin.call(this, { "maxSize" : ip.createIntParser(10, 1000),
+  PmOnlyCommandPlugin.call(this, bot, { "maxSize" : ip.createIntParser(10, 1000),
     "defaultReturn" : ip.createIntParser(1, 50), "command" : ip.commandNameParser,
-    "respondAsPmAlways" : ip.booleanParser, "resolveDetails" : ip.booleanParser,
-    "announceDetails" : ip.booleanParser });
+    "resolveDetails" : ip.booleanParser, "announceDetails" : ip.booleanParser });
   // These values can all be overriden in the config
   this.maxSize = 100;
   this.defaultReturn = 10;
   this.command = "urls";
-  this.respondAsPmAlways = true;
   this.resolveDetails = true;
   this.announceDetails = false;
 
@@ -33,10 +31,10 @@ function UrlTracker(bot, config, channel) {
   this.applyConfig(config);
 }
 
-util.inherits(UrlTracker, ConfigurablePlugin);
+util.inherits(UrlTracker, PmOnlyCommandPlugin);
 
 // respondToCommand implementation for urlTracker
-UrlTracker.prototype.run = function(nick, args, isPm) {
+UrlTracker.prototype.runCommand = function(nick, args) {
   var urls = this._urls;
   var numToReturn = this.defaultReturn;
   var nickFilter = undefined;
@@ -56,17 +54,15 @@ UrlTracker.prototype.run = function(nick, args, isPm) {
     }
   }
 
-  var target = this._channel;
-  if (this.respondAsPmAlways || isPm) {
-    target = nick;
-  }
-
+  var response = [];
   for ( var i = 0, returned = 0; i < urls.length && returned < numToReturn; ++i) {
     if (nickFilter === undefined || urls[i].nick == nickFilter) {
-      this._bot.say(target, urls[i].toString());
+      response.push(urls[i].toString());
       ++returned;
     }
   }
+
+  return response;
 };
 
 // Track urls that are in the given text
@@ -208,11 +204,13 @@ UrlInfo.prototype.toString = function() {
  *            whether or not insert this at the head of the list of information
  */
 UrlInfo.prototype.addExtra = function(name, value, head) {
-  this[name] = this._encoder.htmlDecode(value.trim());
-  if (head) {
-    this._extraInfo.unshift(name);
-  } else {
-    this._extraInfo.push(name);
+  if (value !== undefined) {
+    this[name] = this._encoder.htmlDecode(value.trim());
+    if (head) {
+      this._extraInfo.unshift(name);
+    } else {
+      this._extraInfo.push(name);
+    }
   }
 };
 

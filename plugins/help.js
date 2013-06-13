@@ -1,4 +1,8 @@
+var PmOnlyCommandPlugin = require("../lib/thrizzle").PmOnlyCommandPlugin;
+var util = require('util');
+
 function HELP(bot, manager, channel) {
+  PmOnlyCommandPlugin.call(this, bot, {});
   this.command = "help";
   if (channel === undefined) {
     this.help = "[<channel>] [<cmd>]";
@@ -15,6 +19,8 @@ function HELP(bot, manager, channel) {
   this._channel = channel;
 }
 
+util.inherits(HELP, PmOnlyCommandPlugin);
+
 /**
  * This displays the help
  * 
@@ -25,24 +31,17 @@ function HELP(bot, manager, channel) {
  *            is asking for help
  * @param args
  *            to the help command
- * @param isPm
+ * @param fromPm
  *            if it came through a pm
  */
-HELP.prototype.run = function(who, args, isPm) {
-  var target, preface, cmdChar;
-  var extraResponses = [];
+HELP.prototype.runCommand = function(who, args, toPm, fromPm) {
+  var preface, cmdChar;
+  var responses = [];
   var response = "";
   var commands = this._manager.getCommands();
 
-  if (isPm) {
-    target = who;
-    preface = "";
-    cmdChar = "";
-  } else {
-    target = this._channel;
-    preface = who + ": ";
-    cmdChar = this._manager.getCommandChar();
-  }
+  cmdChar = fromPm ? "" : this._manager.getCommandChar(); 
+  preface = toPm ? "" : who + ": ";
 
   if (args.length > 0) {
     var command = args[0];
@@ -58,15 +57,13 @@ HELP.prototype.run = function(who, args, isPm) {
       var displayCmd = cmdChar + cmd;
       response += " " + displayCmd;
       if (commands[cmd].description !== undefined) {
-        extraResponses.push(displayCmd + " - " + commands[cmd].description);
+        responses.push(preface + "    " + displayCmd + " - " + commands[cmd].description);
       }
     }
   }
 
-  this._bot.say(target, preface + response);
-  for ( var i in extraResponses) {
-    this._bot.say(target, preface + extraResponses[i]);
-  }
+  responses.unshift(response);
+  return responses;
 };
 
 exports.init = function(bot, manager, config, channel) {
